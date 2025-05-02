@@ -1,16 +1,11 @@
-# scrapers/ranking.py
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import pandas as pd
-
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 
 def criar_driver():
     options = Options()
@@ -23,7 +18,6 @@ def criar_driver():
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
-
 
 def buscar_posicao_furia():
     driver = criar_driver()
@@ -41,9 +35,9 @@ def buscar_posicao_furia():
             if "FURIA" in team_name.upper():
                 position = team.find("span", class_="position").text.strip().replace("#", "")
                 points = team.find("span", class_="points").text.strip().replace("(", "").replace(")", "").replace("HLTV points", "").strip()
-                return f"\U0001F3C6 A FURIA est\u00e1 na posi\u00e7\u00e3o {position}\u00aa com {points} pontos na HLTV."
+                return f"🏆 A FURIA está na posição {position}ª com {points} pontos na HLTV."
 
-        return "\ud83d\ude14 N\u00e3o encontrei a FURIA no ranking."
+        return "😔 Não encontrei a FURIA no ranking."
 
     except Exception as e:
         return f"Erro ao buscar ranking: {e}"
@@ -60,7 +54,6 @@ def buscar_top_30():
         )
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        # pega só as 30 primeiras divs
         ranked_teams = soup.find_all("div", class_="ranked-team")[:30]
 
         lista = []
@@ -75,14 +68,13 @@ def buscar_top_30():
             })
 
         df = pd.DataFrame(lista).sort_values("Posição").reset_index(drop=True)
-        return df
+        return df.to_dict(orient="records")  # retorna em formato amigável à API
 
     except Exception as e:
         return f"Erro ao buscar Top 30: {e}"
 
     finally:
         driver.quit()
-
 
 def buscar_lineup_furia():
     driver = criar_driver()
@@ -94,18 +86,15 @@ def buscar_lineup_furia():
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-        players = soup.find_all("div", class_="playerNickname")
+        players = [div.text.strip() for div in soup.select("div.playerNickname")]
+        coach_tag = soup.find("div", class_="coach-name")
 
-        jogadores = []
-        for p in players:
-            nickname = p.text.strip()
-            jogadores.append(nickname)
+        coach = coach_tag.text.strip() if coach_tag else "Desconhecido"
 
-        # Coach (se quiser capturar depois)
-        return jogadores
+        return players, coach
 
     except Exception as e:
-        return []
+        return [], f"Erro ao buscar lineup: {e}"
 
     finally:
         driver.quit()

@@ -1,24 +1,22 @@
-# scrapers/noticias.py
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+
 
 def criar_driver():
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--remote-debugging-port=9222')
+    options.binary_location = "/usr/bin/chromium-browser"  # Render usa chromium-browser
 
-    options.binary_location = "/usr/bin/chromium"  # caminho do Chrome no container
-    service = Service("/usr/bin/chromedriver")     # caminho do chromedriver no container
-
+    service = Service("/usr/bin/chromedriver")  # funciona se chromedriver estiver neste caminho
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
@@ -33,14 +31,14 @@ def buscar_noticias():
         )
 
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        noticias = soup.find_all('a', class_="newsline article")[:10]
+        noticias = soup.select('.newsline.article')[:10]
 
         lista_noticias = []
         for noticia in noticias:
-            titulo_tag = noticia.find('div', class_='newstext')
+            titulo_tag = noticia.select_one('.newstext')
             if titulo_tag:
                 titulo = titulo_tag.get_text(strip=True)
-                link = "https://www.hltv.org" + noticia['href']
+                link = "https://www.hltv.org" + noticia.get("href", "")
                 lista_noticias.append({"titulo": titulo, "link": link})
 
         return lista_noticias
