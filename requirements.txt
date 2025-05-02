@@ -2,3 +2,4 @@ fastapi
 uvicorn[standard]
 cloudscraper
 beautifulsoup4
+selenium
