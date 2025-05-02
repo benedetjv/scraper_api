@@ -6,6 +6,10 @@ from noticias import buscar_noticias
 from calendario import buscar_partida_furia_hoje
 app = FastAPI()
 
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok"}
+
 
 @app.get("/")
 def root():
