@@ -1,10 +1,11 @@
-app = FastAPI()
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from ranking import buscar_posicao_furia, buscar_top_30
 from lineup import buscar_lineup_furia
 from noticias import buscar_noticias
 from calendario import buscar_partida_furia_hoje
+app = FastAPI()
+
 
 @app.get("/")
 def root():
