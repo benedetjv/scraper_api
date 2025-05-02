@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
-cloudscraper
-beautifulsoup4
 selenium
+beautifulsoup4
+cloudscraper
+chromedriver-autoinstaller
